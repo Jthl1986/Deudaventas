@@ -46,7 +46,6 @@ def graficobar(df_final):
     def millions(x, pos):
         'The two args are the value and tick position'
         return '%1.0fM' % (x * 1e-6)
-
     # Convertir las fechas a formato datetime
     df_final['fecha'] = pd.to_datetime(df_final['fecha'], format='%m/%Y')
 
@@ -73,18 +72,21 @@ def graficobar(df_final):
     years = df_pivot.columns[-2:]
 
     # Crear un nuevo DataFrame para la comparación
-    df_comparison = df_pivot[years]
+    df_comparison = df_pivot[years].dropna()
+
+    # Resetear el índice para que Mes sea una columna
+    df_comparison.reset_index(inplace=True)
 
     # Plotear los datos
     fig, ax = plt.subplots(figsize=(12, 8))
-    df_comparison.plot(kind='bar', ax=ax)
+    df_comparison.set_index('Mes').plot(kind='bar', ax=ax)
     ax.set_title('Comparación de Ventas por Mes (Año Actual vs Año Anterior)')
     ax.set_xlabel('Mes')
     ax.set_ylabel('Ventas')
-    ax.set_xticklabels(df_comparison.index, rotation=45)
+    ax.set_xticklabels(df_comparison['Mes'], rotation=45)
     ax.yaxis.set_major_formatter(FuncFormatter(millions))
     ax.legend(title='Año')
-    st.pyplot(fig)
+    return st.pyplot(fig)
 
 def grafico(df_final):
     # Función para formatear los números grandes
