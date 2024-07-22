@@ -67,12 +67,12 @@ def graficobar(df_final):
 
     # Plotear los datos
     fig, ax = plt.subplots(figsize=(12, 8))
-    df_comparison.set_index('Mes').plot(kind='bar')
-    fig.title('Comparación de Ventas por Mes (Año Actual vs Año Anterior)')
-    fig.xlabel('Mes')
-    fig.ylabel('Ventas')
-    fig.xticks(rotation=45)
-    fig.legend(title='Año')
+    df_comparison.set_index('Mes').plot(kind='bar', ax=ax)
+    ax.set_title('Comparación de Ventas por Mes (Año Actual vs Año Anterior)')
+    ax.set_xlabel('Mes')
+    ax.set_ylabel('Ventas')
+    ax.set_xticklabels(df_comparison['Mes'], rotation=45)
+    ax.legend(title='Año')
     return st.pyplot(fig)
 
 def grafico(df_final):
