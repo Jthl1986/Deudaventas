@@ -44,7 +44,7 @@ def col_letter_to_index(letter):
 
 def graficobar(df_final):
     # Convertir las fechas a formato datetime
-    df_final['fecha'] = pd.to_datetime(df_final['fecha1'], format='%m/%Y')
+    df_final['fecha'] = pd.to_datetime(df_final['fecha'], format='%m/%Y')
 
     # Extraer el mes y el año de la columna de fecha
     df_final['Mes'] = df_final['fecha'].dt.strftime('%B')
