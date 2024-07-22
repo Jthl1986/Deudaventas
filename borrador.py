@@ -73,7 +73,7 @@ def graficobar(df_final):
     plt.ylabel('Ventas')
     plt.xticks(rotation=45)
     plt.legend(title='Año')
-    return st.pyplot(fig)
+    return st.pyplot()
 
 def grafico(df_final):
     # Función para formatear los números grandes
