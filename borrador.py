@@ -255,7 +255,7 @@ def main():
                 graficodol(df_final)
                 with st.expander("Tabla de control"):
                     st.dataframe(df_selected_columns, use_container_width=True)
-                    st.dataframe(df_final)
+                    st.table(df_final)
             else:
                 st.dataframe(df_ventas)
         except Exception as e:
