@@ -66,14 +66,14 @@ def graficobar(df_final):
     df_comparison.reset_index(inplace=True)
 
     # Plotear los datos
-    plt.figure(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(12, 8))
     df_comparison.set_index('Mes').plot(kind='bar')
     plt.title('Comparación de Ventas por Mes (Año Actual vs Año Anterior)')
     plt.xlabel('Mes')
     plt.ylabel('Ventas')
     plt.xticks(rotation=45)
     plt.legend(title='Año')
-    return st.pyplot()
+    return st.pyplot(fig)
 
 def grafico(df_final):
     # Función para formatear los números grandes
