@@ -205,7 +205,7 @@ def process_text_input(text_input):
     # Reemplazar 'S/D' por NaN y convertir los valores
     for year in ['2020', '2021', '2022', '2023', '2024']:
         subset_df[year].replace('S/D', np.nan, inplace=True)
-        subset_df[year] = subset_df[year].str.replace('.', '', regex=False).astype(float).astype('Int64')
+        subset_df[year] = subset_df[year].str.replace(',', '', regex=False).astype(float).astype('Int64')
     
     # Lista para almacenar los registros
     ventas_records = []
