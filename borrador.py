@@ -43,6 +43,9 @@ def col_letter_to_index(letter):
     return st.pyplot(fig)
 
 def graficobar(df_final):
+    def millions(x, pos):
+        'The two args are the value and tick position'
+        return '%1.0fM' % (x * 1e-6)
     # Convertir las fechas a formato datetime
     df_final['fecha'] = pd.to_datetime(df_final['fecha'], format='%m/%Y')
 
@@ -81,6 +84,7 @@ def graficobar(df_final):
     ax.set_xlabel('Mes')
     ax.set_ylabel('Ventas')
     ax.set_xticklabels(df_comparison['Mes'], rotation=45)
+    ax.yaxis.set_major_formatter(FuncFormatter(millions))
     ax.legend(title='Año')
     return st.pyplot(fig)
 
