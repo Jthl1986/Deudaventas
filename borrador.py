@@ -42,6 +42,38 @@ def col_letter_to_index(letter):
 
     return st.pyplot(fig)
 
+def graficobar(df_final):
+    # Convertir las fechas a formato datetime
+    df_final['fecha'] = pd.to_datetime(df_final['fecha1'], format='%m/%Y')
+
+    # Extraer el mes y el año de la columna de fecha
+    df_final['Mes'] = df_final['fecha'].dt.strftime('%B')
+    df_final['Año'] = df_final['fecha'].dt.year
+
+    # Crear un DataFrame con las ventas del año actual y del año anterior
+    df_ventas = df_final[['Mes', 'Año', 'Ventas']]
+
+    # Pivotar la tabla para tener años como columnas y meses como filas
+    df_pivot = df_ventas.pivot(index='Mes', columns='Año', values='Ventas')
+
+    # Filtrar solo los años disponibles para la comparación
+    years = df_pivot.columns[-2:]
+
+    # Crear un nuevo DataFrame para la comparación
+    df_comparison = df_pivot[years].dropna()
+
+    # Resetear el índice para que Mes sea una columna
+    df_comparison.reset_index(inplace=True)
+
+    # Plotear los datos
+    plt.figure(figsize=(12, 8))
+    df_comparison.set_index('Mes').plot(kind='bar')
+    plt.title('Comparación de Ventas por Mes (Año Actual vs Año Anterior)')
+    plt.xlabel('Mes')
+    plt.ylabel('Ventas')
+    plt.xticks(rotation=45)
+    plt.legend(title='Año')
+    return st.pyplot(fig)
 
 def grafico(df_final):
     # Función para formatear los números grandes
@@ -253,6 +285,7 @@ def main():
                 grafico(df_final)
                 graficomm(df_final)
                 graficodol(df_final)
+                graficobar(df_final)
                 with st.expander("Tabla de control"):
                     st.dataframe(df_selected_columns, use_container_width=True)
                     st.table(df_final)
