@@ -46,7 +46,7 @@ def graficobar(df_final):
     def millions(x, pos):
         'The two args are the value and tick position'
         return '%1.0fM' % (x * 1e-6)
-# Convertir las fechas a formato datetime
+    # Convertir las fechas a formato datetime
     df_final['fecha'] = pd.to_datetime(df_final['fecha'], format='%m/%Y')
 
     # Extraer el mes y el año de la columna de fecha
@@ -54,7 +54,7 @@ def graficobar(df_final):
     df_final['Año'] = df_final['fecha'].dt.year
 
     # Crear un DataFrame con las ventas del año actual y del año anterior
-    df_ventas = df_final[['fecha', 'Mes', 'Año', 'Ventas']]
+    df_ventas = df_final[['Mes', 'Año', 'Ventas']]
 
     # Definir el orden cronológico de los meses
     meses_ordenados = [
@@ -65,38 +65,28 @@ def graficobar(df_final):
     # Convertir la columna 'Mes' a un tipo de datos categórico con el orden especificado
     df_ventas['Mes'] = pd.Categorical(df_ventas['Mes'], categories=meses_ordenados, ordered=True)
 
-    # Ordenar el DataFrame por fecha
-    df_ventas = df_ventas.sort_values('fecha')
-
-    # Seleccionar los últimos 12 meses
-    last_12_months = df_ventas['fecha'].max()
-    first_12_months = last_12_months - pd.DateOffset(months=11)
-    df_last_12_months = df_ventas[(df_ventas['fecha'] >= first_12_months) & (df_ventas['fecha'] <= last_12_months)]
-
-    # Seleccionar los mismos meses del año anterior
-    first_12_months_last_year = first_12_months - pd.DateOffset(years=1)
-    last_12_months_last_year = last_12_months - pd.DateOffset(years=1)
-    df_last_year = df_ventas[(df_ventas['fecha'] >= first_12_months_last_year) & (df_ventas['fecha'] <= last_12_months_last_year)]
-
-    # Concatenar los dos DataFrames
-    df_comparison = pd.concat([df_last_year, df_last_12_months])
-
     # Pivotar la tabla para tener años como columnas y meses como filas
-    df_pivot = df_comparison.pivot(index='Mes', columns='Año', values='Ventas')
+    df_pivot = df_ventas.pivot(index='Mes', columns='Año', values='Ventas')
+
+    # Filtrar solo los años disponibles para la comparación
+    years = df_pivot.columns[-2:]
+
+    # Crear un nuevo DataFrame para la comparación
+    df_comparison = df_pivot[years].dropna()
 
     # Resetear el índice para que Mes sea una columna
-    df_pivot.reset_index(inplace=True)
+    df_comparison.reset_index(inplace=True)
 
     # Plotear los datos
     fig, ax = plt.subplots(figsize=(12, 8))
-    df_pivot.set_index('Mes').plot(kind='bar', ax=ax)
+    df_comparison.set_index('Mes').plot(kind='bar', ax=ax)
     ax.set_title('Comparación de Ventas por Mes (Año Actual vs Año Anterior)')
     ax.set_xlabel('Mes')
     ax.set_ylabel('Ventas')
-    ax.set_xticklabels(df_pivot['Mes'], rotation=45)
+    ax.set_xticklabels(df_comparison['Mes'], rotation=45)
     ax.yaxis.set_major_formatter(FuncFormatter(millions))
     ax.legend(title='Año')
-    st.pyplot(fig)
+    return st.pyplot(fig)
 
 def grafico(df_final):
     # Función para formatear los números grandes
