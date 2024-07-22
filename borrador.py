@@ -53,6 +53,15 @@ def graficobar(df_final):
     # Crear un DataFrame con las ventas del año actual y del año anterior
     df_ventas = df_final[['Mes', 'Año', 'Ventas']]
 
+    # Definir el orden cronológico de los meses
+    meses_ordenados = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ]
+
+    # Convertir la columna 'Mes' a un tipo de datos categórico con el orden especificado
+    df_ventas['Mes'] = pd.Categorical(df_ventas['Mes'], categories=meses_ordenados, ordered=True)
+
     # Pivotar la tabla para tener años como columnas y meses como filas
     df_pivot = df_ventas.pivot(index='Mes', columns='Año', values='Ventas')
 
