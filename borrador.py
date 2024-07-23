@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.ticker import FuncFormatter
 
-st.set_page_config(page_title="Deuda - Ventas", page_icon="📊📈")
+st.set_page_config(page_title="Deuda - Ventas", page_icon="📈")
 
 url = "https://raw.githubusercontent.com/Jthl1986/T1/main/iipcJun24.csv"
 df = pd.read_csv(url, encoding='ISO-8859-1', sep=',')
