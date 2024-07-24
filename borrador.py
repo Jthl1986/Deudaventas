@@ -298,10 +298,10 @@ def main():
                 grafico(df_final)
                 graficomm(df_final)
                 graficodol(df_final)
-                #graficobar(df_final)
+                graficobar(df_final)
                 with st.expander("Tabla de control"):
                     st.dataframe(df_selected_columns, use_container_width=True)
-                    st.table(df_final)
+                    #st.table(df_final)
             else:
                 st.dataframe(df_ventas)
         except Exception as e:
