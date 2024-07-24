@@ -166,7 +166,7 @@ def graficomm(df_final):
     # Ajustar los límites del eje y
     ax1.set_ylim(0, max(df_final['Deuda'].max(), df_final['Ventas'].max(skipna=True)) * 1.1)
 
-    plt.title('Deuda y Ventas en $ (Media Movil Tendencial SMA3)', fontsize=16)
+    plt.title('Deuda y Ventas en $ (Media Movil SMA3)', fontsize=16)
 
     # Corregir la leyenda para mostrar solo una línea y una barra
     handles, labels = ax1.get_legend_handles_labels()
@@ -213,7 +213,7 @@ def graficodol(df_final):
     # Ajustar los límites del eje y
     ax1.set_ylim(0, max(df_final['Dolar'].max(), df_final['dolares'].max(skipna=True)) * 1.1)
 
-    plt.title('Deuda y Ventas en u$s (Media Movil Tendencial SMA3)', fontsize=16)
+    plt.title('Deuda y Ventas en u$s (Media Movil SMA3)', fontsize=16)
 
     # Corregir la leyenda para mostrar solo una línea y una barra
     handles, labels = ax1.get_legend_handles_labels()
