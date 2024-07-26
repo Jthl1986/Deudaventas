@@ -252,7 +252,7 @@ def process_text_input(text_input):
         subset_df[year].replace('S/D', np.nan, inplace=True)
         subset_df[year] = subset_df[year].str.replace(',', '', regex=False).astype(float).astype('Int64')
     
-        if (subset_df[year] == np.nan).all():
+        if subset_df[year].isnull().all():
             subset_df.at[0, year] = 0
 
     # Lista para almacenar los registros
