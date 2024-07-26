@@ -252,7 +252,7 @@ def process_text_input(text_input):
         subset_df[year].replace('S/D', np.nan, inplace=True)
         subset_df[year] = subset_df[year].str.replace(',', '', regex=False).astype(float).astype('Int64')
 
-        # Si la columna de un año es completamente NaN, reemplazar el primer valor con 0
+        # Si la columna de un año es completamente NaN (todos eran 'S/D'), reemplazar el primer valor con 0
         if subset_df[year].isnull().all():
             subset_df.at[0, year] = 0
     
