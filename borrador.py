@@ -246,17 +246,14 @@ def process_text_input(text_input):
     data = StringIO(text_input)
     df_text = pd.read_csv(data, sep='\t')
     subset_df = df_text.iloc[0:12].copy()
-
+    
     # Reemplazar 'S/D' por NaN y convertir los valores
     for year in ['2020', '2021', '2022', '2023', '2024']:
-        # Verificar si toda la columna contiene 'S/D'
-        if (subset_df[year] == 'S/D').all():
-            subset_df.at[0, year] = '0'  # Poner un 0 en el primer mes (enero)
-        else:
-            subset_df[year].replace('S/D', np.nan, inplace=True)
-        
-        # Convertir a float y luego a Int64
+        subset_df[year].replace('S/D', np.nan, inplace=True)
         subset_df[year] = subset_df[year].str.replace(',', '', regex=False).astype(float).astype('Int64')
+    
+        if subset_df[year].isnull().all():
+            subset_df.at[0, year] = 0
 
     # Lista para almacenar los registros
     ventas_records = []
@@ -266,7 +263,7 @@ def process_text_input(text_input):
 
     # Extraer las ventas y agregar a la lista
     for i, mes in enumerate(meses):
-        for year in ['2020', '2021', '2022', '2023', '2024']:
+        for year in ['2020', '2021','2022', '2023', '2024']:
             if not pd.isnull(subset_df[year].iloc[i]):
                 ventas_records.append([f"{mes.capitalize()} - {year}", subset_df[year].iloc[i]])
 
