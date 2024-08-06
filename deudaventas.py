@@ -52,7 +52,7 @@ def grafico(df_final):
     # Etiquetas y leyendas
     ax1.set_ylabel('Deuda y Ventas (en millones)', color='k')
     ax1.tick_params(axis='y', labelcolor='k')
-    ax1.set_xticklabels(df_final['Mes'], rotation=45)
+    ax1.set_xticklabels(df_final['Mes'], rotation=90)
     ax1.yaxis.set_major_formatter(FuncFormatter(millions))
 
     # Ajustar los límites del eje y
