@@ -8,7 +8,7 @@ from matplotlib.ticker import FuncFormatter
 
 st.set_page_config(page_title="Deuda - Ventas", page_icon="📈")
 
-url = "https://raw.githubusercontent.com/Jthl1986/T1/main/iipcAgo24.csv"
+url = "https://raw.githubusercontent.com/Jthl1986/T1/main/iipcJul24.csv"
 df = pd.read_csv(url, encoding='ISO-8859-1', sep=',')
 
 # Ocultar fuente GitHub
