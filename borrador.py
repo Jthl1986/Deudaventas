@@ -228,7 +228,7 @@ def graficodol(df_final):
 
 def process_file(file):
     df_excel = pd.read_excel(file, header=None, engine='xlrd')
-    celdas_totales = ['E4', 'K4', 'Q4', 'W4', 'AC4', 'AI4', 'AO4', 'AU4', 'BA4', 'BG4', 'BM4', 'BS4', 'BY4', 'CE4', 'CK4', 'CQ4', 'CW4', 'DC4', 'DI4', 'DO4', 'DU4', 'EA4', 'EG4']
+    celdas_totales = ['E4', 'K4', 'Q4', 'W4', 'AC4', 'AI4', 'AO4', 'AU4', 'BA4', 'BG4', 'BM4', 'BS4', 'BY4', 'CE4', 'CK4', 'CQ4', 'CW4', 'DC4', 'DI4', 'DO4', 'DU4', 'EA4', 'EG4', 'EM4' ]
     celdas_indices = [(int(''.join(filter(str.isdigit, cell))) - 1, col_letter_to_index(''.join(filter(str.isalpha, cell)))) for cell in celdas_totales]
     totales = [df_excel.iat[row, col] if pd.notna(df_excel.iat[row, col]) else 0 for row, col in celdas_indices]
     meses = df_excel.iloc[1, 3:].dropna().values
