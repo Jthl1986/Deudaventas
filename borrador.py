@@ -284,9 +284,6 @@ def main():
     "<p style='text-align: center;'><small>Desarrollado por JSantacecilia - JSaborido - Equipo Agro</small></p>",
     unsafe_allow_html=True
 )
-    st.markdown(
-    "EN MANTENIMIENTO - TIRAR EL DETALLE DE VENTAS DESDE ENERO 2020 A DICIEMBRE 2024"
-)
 
     uploaded_file = st.file_uploader("Sube archivo DEUDA", type=["xls", "xlsx"])
     
