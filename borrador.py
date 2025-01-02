@@ -248,7 +248,7 @@ def process_text_input(text_input):
     subset_df = df_text.iloc[0:12].copy()
 
     # Reemplazar 'S/D' por NaN y convertir los valores
-    for year in ['2021', '2021', '2022', '2023', '2025']:
+    for year in ['2020', '2021', '2022', '2023', '2024']:
         # Verificar si toda la columna contiene 'S/D'
         if (subset_df[year] == 'S/D').all():
             subset_df.at[0, year] = '0'  # Poner un 0 en el primer mes (enero)
@@ -267,7 +267,7 @@ def process_text_input(text_input):
 
     # Extraer las ventas y agregar a la lista
     for i, mes in enumerate(meses):
-        for year in ['2021', '2021', '2022', '2023', '2025']:
+        for year in ['2020', '2021', '2022', '2023', '2024']:
             if not pd.isnull(subset_df[year].iloc[i]):
                 ventas_records.append([f"{mes.capitalize()} - {year}", subset_df[year].iloc[i]])
 
