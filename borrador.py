@@ -285,7 +285,7 @@ def main():
     unsafe_allow_html=True
 )
     st.markdown(
-    "<p style='text-align: center;'><small>EN MANTENIMIENTO - TIRAR EL DETALLE DE VENTAS DESDE ENERO 2020 A DICIEMBRE 2024</small></p>"
+    "EN MANTENIMIENTO - TIRAR EL DETALLE DE VENTAS DESDE ENERO 2020 A DICIEMBRE 2024"
 )
 
     uploaded_file = st.file_uploader("Sube archivo DEUDA", type=["xls", "xlsx"])
