@@ -74,7 +74,7 @@ def graficobar(df_final):
         df_pivot = df_final.pivot_table(index='Mes', columns='Año', values='Ventas', aggfunc='sum')
         df_pivot = df_pivot.sort_index(axis=1)
         
-        st.write("Debug - Años disponibles:", df_pivot.columns.tolist())  # Debug
+        #st.write("Debug - Años disponibles:", df_pivot.columns.tolist())  # Debug
         
         if len(df_pivot.columns) < 2:
             st.warning(f"Requiere al menos 2 años. Años recibidos: {df_pivot.columns.tolist()}")
