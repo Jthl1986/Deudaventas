@@ -56,23 +56,34 @@ def graficobar(df_final):
         'July', 'August', 'September', 'October', 'November', 'December'
     ]
     df_ventas['Mes'] = pd.Categorical(df_ventas['Mes'], categories=meses_ordenados, ordered=True)
+    
+    # Crear pivot y ordenar años
     df_pivot = df_ventas.pivot(index='Mes', columns='Año', values='Ventas')
+    df_pivot = df_pivot.sort_index(axis=1)  # Ordenar años ascendentemente
 
-    # Filtrar solo los años disponibles para la comparación
-    years = df_pivot.columns[-2:]
-    df_comparison = df_pivot[years].dropna()
-    df_comparison.reset_index(inplace=True)
+    # Verificar si hay al menos dos años con datos
+    if len(df_pivot.columns) < 2:
+        return  # No graficar si hay menos de dos años
 
-    # Graficar
+    # Filtrar meses que tengan datos en todos los años
+    df_comparison = df_pivot.dropna()
+    
+    if df_comparison.empty:
+        return  # No hay datos válidos para comparar
+
+    # Graficar todos los años disponibles
     fig, ax = plt.subplots(figsize=(12, 8))
-    df_comparison.set_index('Mes').plot(kind='bar', ax=ax)
-    ax.set_title('Comparación de Ventas por Mes (Año Actual vs Año Anterior)')
+    df_comparison.plot(kind='bar', ax=ax)
+    
+    ax.set_title(f'Comparación de Ventas por Mes ({", ".join(map(str, df_comparison.columns))})')
     ax.set_xlabel('Mes')
     ax.set_ylabel('Ventas')
-    ax.set_xticklabels(df_comparison['Mes'], rotation=45)
+    ax.set_xticklabels(df_comparison.index, rotation=45)
     ax.yaxis.set_major_formatter(FuncFormatter(millions))
-    ax.legend(title='Año')
-    return st.pyplot(fig)
+    ax.legend(title='Año', bbox_to_anchor=(1.05, 1), loc='upper left')
+    
+    plt.tight_layout()
+    st.pyplot(fig)
 
 def grafico(df_final):
     def millions(x, pos):
