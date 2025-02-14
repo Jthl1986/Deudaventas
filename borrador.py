@@ -83,7 +83,7 @@ def graficobar(df_final):
     ax.legend(title='Año', bbox_to_anchor=(1.05, 1), loc='upper left')
     
     plt.tight_layout()
-    st.pyplot(fig)
+    return st.pyplot(fig)
 
 def grafico(df_final):
     def millions(x, pos):
