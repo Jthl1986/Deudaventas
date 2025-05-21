@@ -8,10 +8,22 @@ from matplotlib.ticker import FuncFormatter
 
 st.set_page_config(page_title="Deuda - Ventas", page_icon="📈")
 
-url = "https://raw.githubusercontent.com/Jthl1986/T1/main/iipcSep24.csv"
+hide_streamlit_style = """
+    <style>
+    /* Ocultar el botón de Share */
+    .stApp header [data-testid="stHeader"] { 
+        display: none; 
+    }
+    /* Opcional: Ocultar la barra de menú de Streamlit (incluye acceso al GitHub si está visible) */
+    footer {visibility: hidden;}
+    .css-1lsmgbg.egzxvld1 {visibility: hidden;}
+    </style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+url = "https://raw.githubusercontent.com/Jthl1986/T1/main/iipcAbr25.csv"
 df = pd.read_csv(url, encoding='ISO-8859-1', sep=',')
 
-# Ocultar fuente GitHub
 hide_github_link = """
 <style>
 #MainMenu {visibility: hidden;}
@@ -27,208 +39,159 @@ def col_letter_to_index(letter):
         index = index * 26 + (ord(char) - ord('A')) + 1
     return index - 1
 
-    # Ajustar los límites del eje y
-    ax1.set_ylim(0, max(df_merged['Deuda'].max()) * 1.1)
-
-    plt.title('Deuda por Mes a valores constantes', fontsize=16)
-
-    # Corregir la leyenda para mostrar solo una barra
-    handles, labels = ax1.get_legend_handles_labels()
-    bar = plt.Rectangle((0,0),1,1,fc="green", edgecolor='black')
-    ax1.legend([bar], ['Deuda'], loc='upper left')
-
-    # Mejorar la estética general del gráfico
-    sns.despine(left=True, bottom=True)
-
-    return st.pyplot(fig)
-
 def graficobar(df_final):
     def millions(x, pos):
-        'The two args are the value and tick position'
         return '%1.0fM' % (x * 1e-6)
-    # Convertir las fechas a formato datetime
-    df_final['fecha'] = pd.to_datetime(df_final['fecha'], format='%m/%Y')
+    
+    # Verificar datos de entrada
+    if df_final.empty:
+        st.warning("DataFrame vacío: no hay datos para graficar.")
+        return
+    
+    try:
+        # Convertir fechas con manejo de errores
+        df_final['fecha'] = pd.to_datetime(df_final['fecha'], format='%m/%Y', errors='coerce')
+        df_final = df_final.dropna(subset=['fecha'])
+        
+        # Mapear meses a español
+        month_translation = {
+            'January': 'Enero', 'February': 'Febrero', 'March': 'Marzo',
+            'April': 'Abril', 'May': 'Mayo', 'June': 'Junio',
+            'July': 'Julio', 'August': 'Agosto', 'September': 'Septiembre',
+            'October': 'Octubre', 'November': 'Noviembre', 'December': 'Diciembre'
+        }
+        df_final['Mes'] = df_final['fecha'].dt.strftime('%B').map(month_translation)
+        df_final['Año'] = df_final['fecha'].dt.year
 
-    # Extraer el mes y el año de la columna de fecha
-    df_final['Mes'] = df_final['fecha'].dt.strftime('%B')
-    df_final['Año'] = df_final['fecha'].dt.year
+        # Ordenar meses en español
+        meses_ordenados = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        ]
+        df_final['Mes'] = pd.Categorical(df_final['Mes'], categories=meses_ordenados, ordered=True)
+        
+        # Crear pivot y validar
+        df_pivot = df_final.pivot_table(index='Mes', columns='Año', values='Ventas', aggfunc='sum')
+        df_pivot = df_pivot.sort_index(axis=1)
+        
+        #st.write("Debug - Años disponibles:", df_pivot.columns.tolist())  # Debug
+        
+        if len(df_pivot.columns) < 2:
+            st.warning(f"Requiere al menos 2 años. Años recibidos: {df_pivot.columns.tolist()}")
+            return
+            
+        # Filtrar meses con al menos 1 año de datos
+        df_comparison = df_pivot.dropna(how='all')
+        
+        if df_comparison.empty:
+            st.warning("No hay meses con datos comunes entre los años.")
+            return
 
-    # Crear un DataFrame con las ventas del año actual y del año anterior
-    df_ventas = df_final[['Mes', 'Año', 'Ventas']]
-
-    # Definir el orden cronológico de los meses
-    meses_ordenados = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-    ]
-
-    # Convertir la columna 'Mes' a un tipo de datos categórico con el orden especificado
-    df_ventas['Mes'] = pd.Categorical(df_ventas['Mes'], categories=meses_ordenados, ordered=True)
-
-    # Pivotar la tabla para tener años como columnas y meses como filas
-    df_pivot = df_ventas.pivot(index='Mes', columns='Año', values='Ventas')
-
-    # Filtrar solo los años disponibles para la comparación
-    years = df_pivot.columns[-2:]
-
-    # Crear un nuevo DataFrame para la comparación
-    df_comparison = df_pivot[years].dropna()
-
-    # Resetear el índice para que Mes sea una columna
-    df_comparison.reset_index(inplace=True)
-
-    # Plotear los datos
-    fig, ax = plt.subplots(figsize=(12, 8))
-    df_comparison.set_index('Mes').plot(kind='bar', ax=ax)
-    ax.set_title('Comparación de Ventas por Mes (Año Actual vs Año Anterior)')
-    ax.set_xlabel('Mes')
-    ax.set_ylabel('Ventas')
-    ax.set_xticklabels(df_comparison['Mes'], rotation=45)
-    ax.yaxis.set_major_formatter(FuncFormatter(millions))
-    ax.legend(title='Año')
-    return st.pyplot(fig)
+        # Graficar
+        fig, ax = plt.subplots(figsize=(12, 8))
+        df_comparison.plot(kind='bar', ax=ax)
+        ax.set_title(f'Comparación de Ventas por Mes ({", ".join(map(str, df_comparison.columns))})')
+        ax.set_xlabel('Mes')
+        ax.set_ylabel('Ventas')
+        ax.yaxis.set_major_formatter(FuncFormatter(millions))
+        ax.legend(title='Año', bbox_to_anchor=(1.05, 1))
+        plt.tight_layout()
+        st.pyplot(fig)
+        plt.close(fig)  # Limpiar memoria de matplotlib
+        
+    except Exception as e:
+        st.error(f"Error crítico: {str(e)}")
 
 def grafico(df_final):
-    # Función para formatear los números grandes
     def millions(x, pos):
-        'The two args are the value and tick position'
         return '%1.0fM' % (x * 1e-6)
-
-    # Aplicar estilo
     sns.set_style("whitegrid")
-
-    # Crear la figura y el eje
     fig, ax1 = plt.subplots(figsize=(14, 8))
-
+    
     # Graficar la deuda como barras
     barplot = sns.barplot(x='Mes', y='Deuda', data=df_final, palette='Greens_d', ax=ax1, edgecolor='black', alpha=0.8)
-
-    # Agregar contornos a las barras
     for bar in barplot.patches:
         bar.set_edgecolor('black')
-
-    # Graficar las ventas como línea en el mismo eje, usando plt.plot para manejar discontinuidades
+    
+    # Graficar las ventas (los NaN no se grafican)
     ax1.plot(df_final['Mes'], df_final['Ventas'], color='r', marker='o', markersize=10, linewidth=2.5, linestyle='-', drawstyle='default')
-
-    # Etiquetas y leyendas
+    
     ax1.set_ylabel('Deuda y Ventas (en millones)', color='k')
     ax1.tick_params(axis='y', labelcolor='k')
     ax1.set_xticklabels(df_final['Mes'], rotation=90)
     ax1.yaxis.set_major_formatter(FuncFormatter(millions))
-
-    # Ajustar los límites del eje y
     ax1.set_ylim(0, max(df_final['Deuda'].max(), df_final['Ventas'].max(skipna=True)) * 1.1)
-
+    
     plt.title('Deuda y Ventas por Mes a valores constantes', fontsize=16)
-
-    # Corregir la leyenda para mostrar solo una línea y una barra
-    handles, labels = ax1.get_legend_handles_labels()
+    
+    # Leyenda personalizada
     line = plt.Line2D([0], [0], color='r', lw=2.5, marker='o', markersize=10)
     bar = plt.Rectangle((0,0),1,1,fc="green", edgecolor='black')
     ax1.legend([line, bar], ['Ventas', 'Deuda'], loc='upper left')
-
-    # Mejorar la estética general del gráfico
+    
     sns.despine(left=True, bottom=True)
-
     return st.pyplot(fig)
 
 def graficomm(df_final):
-    # Función para formatear los números grandes
     def millions(x, pos):
-        'The two args are the value and tick position'
         return '%1.0fM' % (x * 1e-6)
-
-    # Aplicar estilo
     sns.set_style("whitegrid")
-
-    # Crear la figura y el eje
     fig, ax1 = plt.subplots(figsize=(14, 8))
-
-    # Graficar la deuda como barras
+    
     barplot = sns.barplot(x='Mes', y='Deuda', data=df_final, palette='Greens_d', ax=ax1, edgecolor='black', alpha=0.8)
-
-    # Agregar contornos a las barras
     for bar in barplot.patches:
         bar.set_edgecolor('black')
-
-    # Calcular la media móvil de las ventas para suavizar la línea
+    
+    # Calcular media móvil de las ventas (SMA3)
     df_final['Ventas_suavizadas'] = df_final['Ventas'].rolling(window=3).mean()
-
-    # Graficar las ventas suavizadas como línea en el mismo eje
     ax1.plot(df_final['Mes'], df_final['Ventas_suavizadas'], color='r', marker='o', markersize=10, linewidth=2.5, linestyle='-', drawstyle='default')
-
-    # Etiquetas y leyendas
+    
     ax1.set_ylabel('Deuda y Ventas (en millones)', color='k')
     ax1.tick_params(axis='y', labelcolor='k')
     ax1.set_xticklabels(df_final['Mes'], rotation=90)
     ax1.yaxis.set_major_formatter(FuncFormatter(millions))
-
-    # Ajustar los límites del eje y
     ax1.set_ylim(0, max(df_final['Deuda'].max(), df_final['Ventas'].max(skipna=True)) * 1.1)
-
+    
     plt.title('Deuda y Ventas en $ (Media Movil SMA3)', fontsize=16)
-
-    # Corregir la leyenda para mostrar solo una línea y una barra
-    handles, labels = ax1.get_legend_handles_labels()
+    
     line = plt.Line2D([0], [0], color='r', lw=2.5, marker='o', markersize=10)
     bar = plt.Rectangle((0,0),1,1,fc="green", edgecolor='black')
     ax1.legend([line, bar], ['Ventas', 'Deuda'], loc='upper left')
-
-    # Mejorar la estética general del gráfico
+    
     sns.despine(left=True, bottom=True)
-
     return st.pyplot(fig)
 
 def graficodol(df_final):
-    # Función para formatear los números grandes
     def millions(x, pos):
-        'The two args are the value and tick position'
         return '%1.0fM' % (x * 1e-6)
-
-    # Aplicar estilo
     sns.set_style("whitegrid")
-
-    # Crear la figura y el eje
     fig, ax1 = plt.subplots(figsize=(14, 8))
-
-    # Graficar la deuda como barras
+    
     barplot = sns.barplot(x='Mes', y='Dolar', data=df_final, palette='Greens_d', ax=ax1, edgecolor='black', alpha=0.8)
-
-    # Agregar contornos a las barras
     for bar in barplot.patches:
         bar.set_edgecolor('black')
-
-    # Calcular la media móvil de las ventas para suavizar la línea
+    
     df_final['Ventas_suavizadasdol'] = df_final['dolares'].rolling(window=3).mean()
-
-    # Graficar las ventas suavizadas como línea en el mismo eje
     ax1.plot(df_final['Mes'], df_final['Ventas_suavizadasdol'], color='r', marker='o', markersize=10, linewidth=2.5, linestyle='-', drawstyle='default')
-
-    # Etiquetas y leyendas
+    
     ax1.set_ylabel('Deuda y Ventas (en millones)', color='k')
     ax1.tick_params(axis='y', labelcolor='k')
     ax1.set_xticklabels(df_final['Mes'], rotation=90)
     ax1.yaxis.set_major_formatter(FuncFormatter(millions))
-
-    # Ajustar los límites del eje y
     ax1.set_ylim(0, max(df_final['Dolar'].max(), df_final['dolares'].max(skipna=True)) * 1.1)
-
+    
     plt.title('Deuda y Ventas en u$s (Media Movil SMA3)', fontsize=16)
-
-    # Corregir la leyenda para mostrar solo una línea y una barra
-    handles, labels = ax1.get_legend_handles_labels()
+    
     line = plt.Line2D([0], [0], color='r', lw=2.5, marker='o', markersize=10)
     bar = plt.Rectangle((0,0),1,1,fc="green", edgecolor='black')
     ax1.legend([line, bar], ['Venta en u$s', 'Deuda en u$s'], loc='upper left')
-
-    # Mejorar la estética general del gráfico
+    
     sns.despine(left=True, bottom=True)
-
     return st.pyplot(fig)
 
 def process_file(file):
     df_excel = pd.read_excel(file, header=None, engine='xlrd')
-    celdas_totales = ['E4', 'K4', 'Q4', 'W4', 'AC4', 'AI4', 'AO4', 'AU4', 'BA4', 'BG4', 'BM4', 'BS4', 'BY4', 'CE4', 'CK4', 'CQ4', 'CW4', 'DC4', 'DI4', 'DO4', 'DU4', 'EA4', 'EG4', 'EM4' ]
+    celdas_totales = ['E4', 'K4', 'Q4', 'W4', 'AC4', 'AI4', 'AO4', 'AU4', 'BA4', 'BG4', 'BM4', 'BS4', 'BY4', 'CE4', 'CK4', 'CQ4', 'CW4', 'DC4', 'DI4', 'DO4', 'DU4', 'EA4', 'EG4', 'EM4']
     celdas_indices = [(int(''.join(filter(str.isdigit, cell))) - 1, col_letter_to_index(''.join(filter(str.isalpha, cell)))) for cell in celdas_totales]
     totales = [df_excel.iat[row, col] if pd.notna(df_excel.iat[row, col]) else 0 for row, col in celdas_indices]
     meses = df_excel.iloc[1, 3:].dropna().values
@@ -248,32 +211,22 @@ def process_text_input(text_input):
     subset_df = df_text.iloc[0:12].copy()
 
     # Reemplazar 'S/D' por NaN y convertir los valores
-    for year in ['2020', '2021', '2022', '2023', '2024']:
-        # Verificar si toda la columna contiene 'S/D'
-        if (subset_df[year] == 'S/D').all():
-            subset_df.at[0, year] = '0'  # Poner un 0 en el primer mes (enero)
-        else:
-            subset_df[year].replace('S/D', np.nan, inplace=True)
-        
-        # Reemplazar valores restantes y convertir a float y luego a Int64
+    for year in ['2021', '2022', '2023', '2024', '2025']:
         subset_df[year].replace('S/D', np.nan, inplace=True)
-        subset_df[year] = subset_df[year].str.replace(',', '', regex=False).astype(float).astype('Int64')
+        # Convertir a cadena solo los valores no nulos para eliminar comas
+        subset_df[year] = subset_df[year].apply(lambda x: str(x).replace(',', '') if pd.notnull(x) else x)
+        subset_df[year] = pd.to_numeric(subset_df[year], errors='coerce').astype('Int64')
 
-    # Lista para almacenar los registros
     ventas_records = []
-
-    # Nombres de meses
     meses = subset_df['Mes'].tolist()
 
-    # Extraer las ventas y agregar a la lista
+    # Crear registros solo cuando existe dato (omitiendo NaN)
     for i, mes in enumerate(meses):
-        for year in ['2020', '2021', '2022', '2023', '2024']:
+        for year in ['2021', '2022', '2023', '2024', '2025']:
             if not pd.isnull(subset_df[year].iloc[i]):
                 ventas_records.append([f"{mes.capitalize()} - {year}", subset_df[year].iloc[i]])
 
-    # Crear DataFrame a partir de la lista de registros
     df_ventas = pd.DataFrame(ventas_records, columns=['Mes', 'Ventas'])
-
     return df_ventas
 
 pd.set_option('display.float_format', lambda x: '%.0f' % x)
@@ -281,43 +234,43 @@ pd.set_option('display.float_format', lambda x: '%.0f' % x)
 def main():
     st.write("<h1 style='text-align: center;'>Deuda📊 vs 📈Ventas</h1>", unsafe_allow_html=True)
     st.markdown(
-    "<p style='text-align: center;'><small>Desarrollado por JSantacecilia - JSaborido - Equipo Agro</small></p>",
-    unsafe_allow_html=True
-)
+        "<p style='text-align: center;'><small>Desarrollado por JSantacecilia - JSaborido - Equipo Agro</small></p>",
+        unsafe_allow_html=True
+    )
 
     uploaded_file = st.file_uploader("Sube archivo DEUDA", type=["xls", "xlsx"])
-    
     df_merged = None
     if uploaded_file is not None:
         df_merged = process_file(uploaded_file)
         
-    
     text_input = st.text_area("Pega aquí EVOLUCIÓN DE VENTAS")
 
     if text_input:
         try:
             df_ventas = process_text_input(text_input)
             if df_merged is not None:
-                df_ventas['Mes'] = df_ventas['Mes'].apply(lambda x: x.split(' - ')[0])  # Ajustar si es necesario
+                # Extraer solo el nombre del mes (sin año) para la fusión
+                df_ventas['Mes'] = df_ventas['Mes'].apply(lambda x: x.split(' - ')[0])
                 df_final = df_merged.merge(process_text_input(text_input), on='Mes', how='left')
                 df_final['dolares'] = (df_final['Ventas'] / df_final['iipc']) / df_final['dolar']
                 df_selected_columns = df_final[['Mes', 'ipc', 'dolar', 'Deuda', 'Ventas']]
+                
                 grafico(df_final)
                 graficomm(df_final)
                 graficodol(df_final)
                 graficobar(df_final)
+                
                 with st.expander("Tabla de control"):
                     st.dataframe(df_selected_columns, use_container_width=True)
-                    #st.table(df_final)
             else:
                 st.dataframe(df_ventas)
         except Exception as e:
             st.error(f"Error procesando los datos: {e}")
 
-
     with st.expander("Metodología utilizada"):
-        st.write("Para la deuda a valores constantes se multiplica deuda histórica de Nosis por Indices IPC Cobertura Nacional suministrado por INDEC, ultimo informe Septiembre 2024. Para deuda en dólares se divide deuda histórica de Nosis por dolar mayorista cotización del último día hábil del mes")
-        st.write("Para las ventas se utiliza las generadas por Pitagorias ajustadas. En el caso de la SMA3 se utilizan medias móviles (el valor graficado es el resultado del promedio entre el valor de dicho mes y el de los dos meses anteriores)")
-        st.write("Utilizar una media móvil de ventana 3 al graficar ventas es beneficioso porque suaviza las fluctuaciones y reduce el ruido, lo que permite identificar tendencias subyacentes de manera más clara y precisa. Esto facilita la interpretación y comparación de datos, ayudando a detectar cambios recientes en las ventas y picos o valles significativos.")
+        st.write("Para la deuda a valores constantes se multiplica deuda histórica de Nosis por Indices IPC Cobertura Nacional suministrado por INDEC, último informe Abril 2025. Para deuda en dólares se divide deuda histórica de Nosis por dólar mayorista (cotización del último día hábil del mes en cuestión).")
+        st.write("Para las ventas se utiliza las generadas por Pitagoras ajustadas. En el caso de la SMA3 se utilizan medias móviles (el valor graficado es el resultado del promedio entre el valor de dicho mes y el de los dos meses anteriores).")
+        st.write("Utilizar una media móvil de ventana 3 al graficar ventas es beneficioso porque suaviza las fluctuaciones y reduce el ruido, permitiendo identificar tendencias subyacentes de manera más clara y precisa.")
+
 if __name__ == "__main__":
     main()
