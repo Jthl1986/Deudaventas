@@ -268,7 +268,7 @@ def main():
             st.error(f"Error procesando los datos: {e}")
 
     with st.expander("Metodología utilizada"):
-        st.write("Para la deuda a valores constantes se multiplica deuda histórica de Nosis por Indices IPC Cobertura Nacional suministrado por INDEC, último informe Mayo 2025. Para deuda en dólares se divide deuda histórica de Nosis por dólar mayorista (cotización del último día hábil del mes en cuestión).")
+        st.write("Para la deuda a valores constantes se multiplica deuda histórica de Nosis por Indices IPC Cobertura Nacional suministrado por INDEC, último informe Julio 2025. Para deuda en dólares se divide deuda histórica de Nosis por dólar mayorista (cotización del último día hábil del mes en cuestión).")
         st.write("Para las ventas se utiliza las generadas por Pitagoras ajustadas. En el caso de la SMA3 se utilizan medias móviles (el valor graficado es el resultado del promedio entre el valor de dicho mes y el de los dos meses anteriores).")
         st.write("Utilizar una media móvil de ventana 3 al graficar ventas es beneficioso porque suaviza las fluctuaciones y reduce el ruido, permitiendo identificar tendencias subyacentes de manera más clara y precisa.")
 
