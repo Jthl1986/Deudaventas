@@ -205,7 +205,7 @@ def process_file(file):
     df_merged['Dolar'] = (df_merged['Nosis'] / df_merged['dolar']).round(0).astype(float)
     return df_merged
 
-def process_text_input(text_input):
+def process_text_input(text_input, sistema_viejo=True):
     data = StringIO(text_input)
     df_text = pd.read_csv(data, sep='\t')
     subset_df = df_text.iloc[0:12].copy()
@@ -213,8 +213,14 @@ def process_text_input(text_input):
     # Reemplazar 'S/D' por NaN y convertir los valores
     for year in ['2021', '2022', '2023', '2024', '2025']:
         subset_df[year].replace('S/D', np.nan, inplace=True)
-        # Convertir a cadena solo los valores no nulos para eliminar comas
-        subset_df[year] = subset_df[year].apply(lambda x: str(x).replace(',', '') if pd.notnull(x) else x)
+        
+        if sistema_viejo:
+            # Sistema viejo: solo eliminar comas como separador de miles
+            subset_df[year] = subset_df[year].apply(lambda x: str(x).replace(',', '') if pd.notnull(x) else x)
+        else:
+            # Sistema nuevo: eliminar puntos como separador de miles y eliminar decimales
+            subset_df[year] = subset_df[year].apply(lambda x: str(x).replace('.', '').split('.')[0] if pd.notnull(x) else x)
+        
         subset_df[year] = pd.to_numeric(subset_df[year], errors='coerce').astype('Int64')
 
     ventas_records = []
@@ -238,6 +244,17 @@ def main():
         unsafe_allow_html=True
     )
 
+    # Interruptor para seleccionar el sistema
+    sistema_viejo = st.radio(
+        "Selecciona el formato de ventas:",
+        ["Sistema Viejo", "Sistema Nuevo"],
+        horizontal=True,
+        index=0  # Por defecto sistema viejo
+    )
+    
+    # Convertir a booleano
+    sistema_viejo = (sistema_viejo == "Sistema Viejo")
+
     uploaded_file = st.file_uploader("Sube archivo DEUDA", type=["xls", "xlsx"])
     df_merged = None
     if uploaded_file is not None:
@@ -247,11 +264,11 @@ def main():
 
     if text_input:
         try:
-            df_ventas = process_text_input(text_input)
+            df_ventas = process_text_input(text_input, sistema_viejo)
             if df_merged is not None:
                 # Extraer solo el nombre del mes (sin año) para la fusión
                 df_ventas['Mes'] = df_ventas['Mes'].apply(lambda x: x.split(' - ')[0])
-                df_final = df_merged.merge(process_text_input(text_input), on='Mes', how='left')
+                df_final = df_merged.merge(process_text_input(text_input, sistema_viejo), on='Mes', how='left')
                 df_final['dolares'] = (df_final['Ventas'] / df_final['iipc']) / df_final['dolar']
                 df_selected_columns = df_final[['Mes', 'ipc', 'dolar', 'Deuda', 'Ventas']]
                 
@@ -272,5 +289,5 @@ def main():
         st.write("Para las ventas se utiliza las generadas por Pitagoras ajustadas. En el caso de la SMA3 se utilizan medias móviles (el valor graficado es el resultado del promedio entre el valor de dicho mes y el de los dos meses anteriores).")
         st.write("Utilizar una media móvil de ventana 3 al graficar ventas es beneficioso porque suaviza las fluctuaciones y reduce el ruido, permitiendo identificar tendencias subyacentes de manera más clara y precisa.")
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     main()
