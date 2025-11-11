@@ -289,5 +289,5 @@ def main():
         st.write("Para las ventas se utiliza las generadas por Pitagoras ajustadas. En el caso de la SMA3 se utilizan medias móviles (el valor graficado es el resultado del promedio entre el valor de dicho mes y el de los dos meses anteriores).")
         st.write("Utilizar una media móvil de ventana 3 al graficar ventas es beneficioso porque suaviza las fluctuaciones y reduce el ruido, permitiendo identificar tendencias subyacentes de manera más clara y precisa.")
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     main()
