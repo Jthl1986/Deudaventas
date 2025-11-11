@@ -210,19 +210,20 @@ def process_text_input(text_input, sistema_viejo=True):
     df_text = pd.read_csv(data, sep='\t')
     subset_df = df_text.iloc[0:12].copy()
 
-    # Reemplazar 'S/D' por NaN y convertir los valores
+    # Reemplazar 'S/D' por NaN
     for year in ['2021', '2022', '2023', '2024', '2025']:
         subset_df[year].replace('S/D', np.nan, inplace=True)
         
         if sistema_viejo:
-            # Sistema viejo: solo eliminar comas como separador de miles
-            subset_df[year] = subset_df[year].apply(lambda x: str(x).replace(',', '') if pd.notnull(x) else x)
+            # Sistema viejo: eliminar comas
+            subset_df[year] = subset_df[year].astype(str).str.replace(',', '', regex=False)
         else:
-            # Sistema nuevo: eliminar puntos como separador de miles y eliminar decimales
-            subset_df[year] = subset_df[year].apply(lambda x: str(x).replace('.', '').split('.')[0] if pd.notnull(x) else x)
+            # Sistema nuevo: eliminar puntos (separador de miles)
+            subset_df[year] = subset_df[year].astype(str).str.replace('.', '', regex=False)
         
+        # Convertir a numérico - pd.to_numeric automáticamente maneja los decimales
         subset_df[year] = pd.to_numeric(subset_df[year], errors='coerce').astype('Int64')
-
+        
     ventas_records = []
     meses = subset_df['Mes'].tolist()
 
