@@ -210,20 +210,21 @@ def process_text_input(text_input, sistema_viejo=True):
     df_text = pd.read_csv(data, sep='\t')
     subset_df = df_text.iloc[0:12].copy()
 
-    # Reemplazar 'S/D' por NaN
+    # Reemplazar 'S/D' por NaN y convertir los valores
     for year in ['2021', '2022', '2023', '2024', '2025']:
         subset_df[year].replace('S/D', np.nan, inplace=True)
+        subset_df[year].replace('N/A', np.nan, inplace=True)  # También manejar 'N/A'
         
         if sistema_viejo:
-            # Sistema viejo: eliminar comas
+            # Sistema viejo: eliminar comas como separador de miles
             subset_df[year] = subset_df[year].astype(str).str.replace(',', '', regex=False)
         else:
-            # Sistema nuevo: eliminar puntos (separador de miles)
-            subset_df[year] = subset_df[year].astype(str).str.replace('.', '', regex=False)
-        
-        # Convertir a numérico - pd.to_numeric automáticamente maneja los decimales
+            # Sistema nuevo: eliminar todos los puntos (separadores de miles) y todo después de la coma decimal
+            subset_df[year] = subset_df[year].astype(str).str.replace(r'\.', '', regex=True)  # Eliminar puntos
+            subset_df[year] = subset_df[year].str.replace(r',.*', '', regex=True)  # Eliminar coma y todo lo después
+
         subset_df[year] = pd.to_numeric(subset_df[year], errors='coerce').astype('Int64')
-        
+
     ventas_records = []
     meses = subset_df['Mes'].tolist()
 
