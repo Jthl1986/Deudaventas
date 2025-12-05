@@ -144,7 +144,8 @@ def graficomm(df_final):
         bar.set_edgecolor('black')
     
     # Calcular media móvil de las ventas (SMA3)
-    df_final['Ventas_suavizadas'] = df_final['Ventas'].rolling(window=3).mean()
+    #df_final['Ventas_suavizadas'] = df_final['Ventas'].rolling(window=3).mean()
+    df_final['Ventas_suavizadas'] = df_final['Ventas'].rolling(window=3, min_periods=1).mean()
     ax1.plot(df_final['Mes'], df_final['Ventas_suavizadas'], color='r', marker='o', markersize=10, linewidth=2.5, linestyle='-', drawstyle='default')
     
     ax1.set_ylabel('Deuda y Ventas (en millones)', color='k')
@@ -172,7 +173,7 @@ def graficodol(df_final):
     for bar in barplot.patches:
         bar.set_edgecolor('black')
     
-    df_final['Ventas_suavizadasdol'] = df_final['dolares'].rolling(window=3).mean()
+    df_final['Ventas_suavizadasdol'] = df_final['dolares'].rolling(window=3, min_periods=1).mean()
     ax1.plot(df_final['Mes'], df_final['Ventas_suavizadasdol'], color='r', marker='o', markersize=10, linewidth=2.5, linestyle='-', drawstyle='default')
     
     ax1.set_ylabel('Deuda y Ventas (en millones)', color='k')
