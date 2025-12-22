@@ -257,7 +257,7 @@ def main():
     )
     
     # Convertir a booleano
-    sistema_viejo = (sistema_viejo == "Sistema Viejo")
+    sistema_viejo = (sistema_viejo == "Ambos sistemas")
 
     uploaded_file = st.file_uploader("Sube archivo DEUDA", type=["xls", "xlsx"])
     df_merged = None
