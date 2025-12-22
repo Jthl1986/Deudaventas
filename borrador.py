@@ -251,7 +251,7 @@ def main():
     # Interruptor para seleccionar el sistema
     sistema_viejo = st.radio(
         "Selecciona el formato de ventas (Sistema viejo Pitagoras - Sistema nuevo ARC):",
-        ["Sistema Viejo", "Sistema Nuevo"],
+        ["Sistema Viejo"],
         horizontal=True,
         index=0  # Por defecto sistema viejo
     )
