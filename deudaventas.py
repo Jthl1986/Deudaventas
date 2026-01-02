@@ -183,7 +183,7 @@ def process_text_input(text_input):
     subset_df = df_text.iloc[0:12].copy()
 
     # Reemplazar 'S/D' por NaN y convertir los valores
-    for year in ['2022', '2023', '2024', '2025', '2026']:
+    for year in ['2021','2022', '2023', '2024', '2025', '2026']:
         subset_df[year].replace('S/D', np.nan, inplace=True)
         subset_df[year] = subset_df[year].str.replace(',', '', regex=False)
         subset_df[year] = pd.to_numeric(subset_df[year], errors='coerce').astype('Int64')
@@ -193,7 +193,7 @@ def process_text_input(text_input):
 
     # Crear registros sólo cuando hay dato (se omiten los NaN)
     for i, mes in enumerate(meses):
-        for year in ['2022', '2023', '2024', '2025', '2026']:
+        for year in ['2021','2022', '2023', '2024', '2025', '2026']:
             if not pd.isnull(subset_df[year].iloc[i]):
                 ventas_records.append([f"{mes.capitalize()} - {year}", subset_df[year].iloc[i]])
 
