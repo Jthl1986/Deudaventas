@@ -219,7 +219,7 @@ def process_text_input(text_input, sistema_viejo=True):
         
         if sistema_viejo:
             # Sistema viejo: eliminar comas como separador de miles
-            subset_df[year] = subset_df[year].astype(str) str.replace(',', '', regex=False)
+            subset_df[year] = subset_df[year].astype(str).str.replace(',', '', regex=False)
         else:
             # Sistema nuevo: eliminar todos los puntos (separadores de miles) y todo después de la coma decimal
             subset_df[year] = subset_df[year].astype(str).str.replace(r'\.', '', regex=True)  # Eliminar puntos
