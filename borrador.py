@@ -213,13 +213,13 @@ def process_text_input(text_input, sistema_viejo=True):
     subset_df = df_text.iloc[0:12].copy()
 
     # Reemplazar 'S/D' por NaN y convertir los valores
-    for year in ['2021', '2022', '2023', '2024', '2025']:
+    for year in ['2022', '2023', '2024', '2025', '2026']:
         subset_df[year].replace('S/D', np.nan, inplace=True)
         subset_df[year].replace('N/A', np.nan, inplace=True)  # También manejar 'N/A'
         
         if sistema_viejo:
             # Sistema viejo: eliminar comas como separador de miles
-            subset_df[year] = subset_df[year].astype(str).str.replace(',', '', regex=False)
+            subset_df[year] = subset_df[year].astype(str) str.replace(',', '', regex=False)
         else:
             # Sistema nuevo: eliminar todos los puntos (separadores de miles) y todo después de la coma decimal
             subset_df[year] = subset_df[year].astype(str).str.replace(r'\.', '', regex=True)  # Eliminar puntos
@@ -232,7 +232,7 @@ def process_text_input(text_input, sistema_viejo=True):
 
     # Crear registros solo cuando existe dato (omitiendo NaN)
     for i, mes in enumerate(meses):
-        for year in ['2021', '2022', '2023', '2024', '2025']:
+        for year in ['2022', '2023', '2024', '2025', '2026']:
             if not pd.isnull(subset_df[year].iloc[i]):
                 ventas_records.append([f"{mes.capitalize()} - {year}", subset_df[year].iloc[i]])
 
