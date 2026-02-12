@@ -21,7 +21,7 @@ hide_streamlit_style = """
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-url = "https://raw.githubusercontent.com/Jthl1986/T1/main/iipcOct25.csv"
+url = "https://raw.githubusercontent.com/Jthl1986/T1/main/iipcEne26.csv"
 #iipcJul25.csv
 df = pd.read_csv(url, encoding='ISO-8859-1', sep=',')
 
